@@ -10,20 +10,19 @@ with three fields: protein1, protein2, and score. Score is an integer. Proteins 
 
 ## Remove rows corresponding to "self-interactions", the vast majority
 
-Run the MATLAB script [readSTRINGdb.m](readSTRINGdb.m) to get the "binaryInteract" cell with five fields: taxID and ProteinID split
-plus the score. Only rows corresponding to pairs with two different taxID's are recorded (i.e.
-pairs within a given organism are excluded). Note that binaryInteract saves the original information
+Run the MATLAB script [readSTRINGdb.m](readSTRINGdb.m) to get the [binaryInteract.mat](binaryInteract.mat) cell with five fields: taxID and ProteinID split plus the score. Only rows corresponding to pairs with two different taxID's are recorded (i.e.
+pairs within a given organism are excluded). Note that "binaryInteract" saves the original information
 row-for-row from the STRING download wherever the taxID are different in columns 1&2. It turns out
 that STRING allows for dupilicated rows insensitive to order. i.e if the order of columns 1 and 2
 doesn't matter some rows are not unique.
 
 ## Get taxonomy library
 
-*readSTRINGdb.m* also returns a text file, "allTax.txt". Take that file and run:
+[readSTRINGdb.m](readSTRINGdb.m) also returns a text file, allTaxID.txt. Take that file and run:
 
 `taxid2name allTaxID.txt -l > taxLibrary.txt`
 
-in linux. Then run the MATLAB script [processTaxLibrary.m](processTaxLibrary.m) to return the "speciesTax" variable which can then be used with "binaryInteract" to continue.
+in linux. Then run the MATLAB script [processTaxLibrary.m](processTaxLibrary.m) to return the [speciesTax.mat](speciesTax.mat) variable which can then be used with [binaryInteract.mat](binaryInteract.mat) to continue.
 
 ## Retrieve host-species, viral-species interaction data
 
