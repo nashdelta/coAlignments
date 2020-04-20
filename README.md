@@ -49,36 +49,11 @@ Now run block 5 of [writeTaxLookup.m](writeTaxLookup.m) to split the .sr files i
 
 ## Cluster host sequences
 
-Proceed to run [mmseq2blast.sh](mmseq2blast.sh) for each host group. This script takes an input .sr file, clusters using mmseqs, aligns the clusters, and calculates consensus sequences. After this, psiblast is run and families are constructed in the {prefix}PB.txt file. For the original run, $3, the input similarity threshold for mmseqs, was set to 0.5.
+Proceed to run the linux script [mmseq2blast.sh](mmseq2blast.sh) for each host group. This script takes an input .sr file, clusters using mmseqs, aligns the clusters, and calculates consensus sequences. After this, psiblast is run and families are constructed in the {prefix}PB.txt file. For the original run, $3, the input similarity threshold for mmseqs, was set to 0.5.
 
-Given the mmseqs results, run blast2cluster for various threshold choices. I compared 0.75/0.5, 0.5/0.3, and 0/0. While
-families change composition with decreasing threshold and in general become larger and less discriminant, the desired
-families (see next section) are insensitive to changes in these parameters. I proceeded with the results for 0.75/0.5.
-I also processed all families even singletons at every step so $5/$6 always 0. This was still reasonably quick (all
-data processed within a day). Alos note that I originally tried two different sortings for the next step, by the number
-of species in a family and the number of sequences. Since we are aiming to find families with as large as possible
-taxonomic diversity I proceeded only with tax-sorted results which in preliminary evaluation did not differ dramatically
-from seq-sorted results at reasonable threshold values. This study was conducted on the plant dataset and may differ
-in the vertebrate dataset.
+Given the mmseqs results, run the linux script [blast2cluster.sh](blast2cluster.sh) for various threshold choices. For the original run 0.75/0.5, 0.5/0.3, and 0/0 were tried for $3, the minimum coverage for a good blast hit, and $4, the minimum bit score for a good blast hit. $5, the minumum number of taxa in a family for further processing, and $6, the minumum number of sequences in a family for further processing, were both kept at 0. This script takes the input $1PB.txt file and calculates stats after the $3/4 thresholds are applied. These non-exclusive families are then sorted by the number of taxa contained. Exclusive families are then assembled through a "greedy" search where sequences appearing in larger clusters (by tax count not sequence count) are removed from smaller clusters. The output are directories of the resulting tax-sorted .sr files and word count files ...taxSortFam, ...MasterWC, and $1TCWC. Finally, it returns .cls files for tax sorted families, $1TC.cls.
 
-# NOTE: This script should be run after mmseq2blast.sh
-#
-# $1 is the name/prefix of the input psiblast results
-# $2 is the original input .sr file
-# $3 is the minimum coverage for a good blast hit
-# $4 is the minimum bit score for a good blast hit
-# $5 is the minumum number of taxa in a family for further processing
-# $6 is the minumum number of sequences in a family for further processing
-#
-# This script takes the input $1PB.txt file and calculates stats after the $3/4 thresholds are applied,
-# #taxa/sequences in the family. These non-exclusive families are then sorted by the number of
-# taxa contained. Exclusive families are then assembled through a "greedy" search where sequences appearing in 
-# larger clusters (by tax count not sequence count) are removed from smaller clusters. The output
-# are directories of the resulting tax-sorted .sr files and word count files *_taxSortFam,
-# *_MasterWC, and $1TCWC Finally, it returns .cls files for tax sorted families, $1TC.cls.
-
-./blast2cluster.sh 'plant' 'plantSTRINGsr.txt' 0.75 0.5 0 0
-./blast2cluster.sh 'vertebrate' 'vertebrateSTRINGsr.txt' 0.75 0.5 0 0
+Families change composition with decreasing thresholds and in general become larger and less discriminant, the desired families (see next section) are insensitive to changes in these parameters and 0.75/0.5 were used in the original run. Note, originally two different sortings for the next step, number of species in a family and the number of sequences in a family, were tried. Only tax-sorted results which in preliminary evaluation did not differ dramatically from seq-sorted results at reasonable threshold values were kept in the final version of the script; however, this study was conducted on the plant dataset and may differ in the vertebrate dataset.
 
 Given the .cls file for each host group and "binaryInteract", return to MATLAB to run processFamilies.
 It takes the above families and makes a shortlist including only those that
