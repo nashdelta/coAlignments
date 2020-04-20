@@ -105,7 +105,31 @@ Now for each target ID, retrieve the sequence and generate a list of queries to 
 
 `split -l 2 -d nrQueries.txt nrQuery`
 
-Run a single iteration of PSIBLAST with nonstandard values: maxtargetsequences=10000, compositional adjustments=no adjustment.
+Run a single iteration of [PSIBLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE=Proteins&PROGRAM=blastp&RUN_PSIBLAST=on) with nonstandard values: maxtargetsequences=10000, compositional adjustments=no adjustment for each. Save the output as a .csv file named with the sequence query ID (from STRING, e.g. "3702.AT3G12280.1.csv").
 
+## Match virus-host taxa to host taxa
 
+Given a directory full of the .csv files returned from the previous step, run Block 1 of the MATLAB script [matchTax.m](matchTax.m) which generates a text file "acc.txt" containing all the NR accession ID's in the blast results. Then use "taxid2name" to return the file [accTax.txt](accTax.txt) with three fields: NR accession ID, tax ID, and species name.
+
+`sort -u acc.txt > tmp_1.txt`
+
+`blastdbcmd -db nr -target_only -entry_batch tmp_1.txt -outfmt '%a %T' > tmp_2.txt`
+
+`cut -f 2 -d ' ' tmp_2.txt | taxid2name > tmp_3.txt`
+
+`tab_merge tmp_2.txt -t=tmp_3.txt -k1=2 -k2=1 -s1=" " > tmp_4.txt`
+
+`cut -f 1 tmp_4.txt > tmp_4.1.txt`
+
+`cut -f 2 tmp_4.txt > tmp_4.2.txt`
+
+`cut -f 3 tmp_4.txt > tmp_4.3.txt`
+
+`cut -f 1 -d. tmp_4.1.txt > tmp_4.1.2.txt`
+
+`paste -d, tmp_4.1.2.txt tmp_4.2.txt tmp_4.3.txt > accTax.txt`
+
+`rm tmp_*`
+
+Continue to run Block 2 of [matchTax.m](matchTax.m) which compress with compressVACH.m data from ncbiVirusDat2.zip
 
