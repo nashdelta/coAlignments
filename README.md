@@ -64,10 +64,15 @@ The next step is to align the families using [microCoAlign.sh](microCoAlign.sh) 
 Note that the when multiple virus sequences are paired with a given host family at this stage, not all these sequences are orthologous. When there are many viruses in a group, the cls2ali output within [microCoAlign.sh](microCoAlign.sh) may be difficult to parse, so move to prof_align for a repeat clustering and alignment step:
 
 `cut -f 1 virus5.sr > tmp_1.txt`
+
 `cut -f 4 -d'|' tmp_1.txt > tmp_2.txt`
+
 `sr2fa virusSTRINGsr.txt -w=0 > tmp_1.fa`
+
 `makeblastdb -in tmp_1.fa -input_type fasta -dbtype prot -parse_seqids -out tmp_Blast`
+
 `prof_align tmp_2.txt -db=tmp_Blast -nosge -w=0 -n=virus5`
+
 `rm tmp_*`
 
 These results (about 10 preferred targets returned) exclude cases where there may be a larger virus protein family
