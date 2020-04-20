@@ -45,120 +45,109 @@ Return to the uniprot id mapping [portal](https://www.uniprot.org/uploadlists/),
 
 Now run Block 4 of [writeTaxLookup.m](writeTaxLookup.m). Given "uniprotSSr.txt", "subSTRING.sr", "uniprotPROsr.tab", and "uniprotWebscrapResults.txt" create a master .sr file by processing and matching the id's in "subSTRING.sr" to those in "subSTRINGnames.txt". Additionally, match the id's in "uniprotPROsr.tab" to those in "uniprotWebscrapResults.txt". Then take the relevant portion of the sequence from "uniprotPROsr.tab" and pair it with the query id in "uniprotWebscrapResults.txt". These id's are not unique and it's possible that some of the id's correspond to more than one taxID. This is true for the "subSTRINGnames" but does not appear to be true for those id's returned from uniprot. The third part of writeTaxLookup takes the first sequence for each repeated sequence (alphabetical order, but again does not seem to be applicable here) so that each id corresponds to a single sequence, removes any sequences which have id's matched to more than 1 taxID (which also did not happen originally) returns the combined .sr file including the orignal sequences from the STRING database, and returns the list of id's for which no sequence was found. This left 28 genes "lost", from 7 viruses three of which have other "found" genes with interactions and 4 which are totally absent from the final curated database [(in the original run)](lostSTRING.txt).
 
-code	taxid	primary taxid	taxname
+Now run block 5 of [writeTaxLookup.m](writeTaxLookup.m) to split the .sr files into host and virus [files](STRINGseq.zip).
 
-Gene lost, others present
+## Cluster host sequences
 
-1	11053	11053	Dengue virus 1
-1	11060	11060	Dengue virus 2
-1	11069	11069	Dengue virus 3
+Proceed to run [mmseq2blast.sh](mmseq2blast.sh) for each host group. This script takes an input .sr file, clusters using mmseqs, aligns the clusters, and calculates consensus sequences. After this, psiblast is run and families are constructed in the {prefix}PB.txt file. For the original run, $3, the input similarity threshold for mmseqs, was set to 0.5.
 
-All genes lost
+Given the mmseqs results, run blast2cluster for various threshold choices. I compared 0.75/0.5, 0.5/0.3, and 0/0. While
+families change composition with decreasing threshold and in general become larger and less discriminant, the desired
+families (see next section) are insensitive to changes in these parameters. I proceeded with the results for 0.75/0.5.
+I also processed all families even singletons at every step so $5/$6 always 0. This was still reasonably quick (all
+data processed within a day). Alos note that I originally tried two different sortings for the next step, by the number
+of species in a family and the number of sequences. Since we are aiming to find families with as large as possible
+taxonomic diversity I proceeded only with tax-sorted results which in preliminary evaluation did not differ dramatically
+from seq-sorted results at reasonable threshold values. This study was conducted on the plant dataset and may differ
+in the vertebrate dataset.
 
-1	118140	118140		Teschovirus A
-1	12110	12110		Foot-and-mouth disease virus
-1	1330524	1330524		Salivirus A
-1	312185	312185		Erbovirus A
-
-Now run block 5 of writeTaxLookup to split the .sr files into host and virus documents. Futher split the host documents
-by taxa. Proceed to run mmseq2blast for each host group.
-
-# $1 is the name/prefix of the output files
-# $2 is the input .sr file
-# $3 is the input similarity threshold for mmseqs
-# $4 is whether to send to sge cluster during cls2ali, if no enter '', if yes enter '-sge'
-# $5 is -grcut for making the consensus sequences
-# $6 is the minimum coverage for a good blast hit
-# $7 is a minimum bit score for a good blast hit
-# This script takes an input .sr file, clusters using mmseqs, aligns the clusters, and calculates consensus sequences
-# After this, psiblast is run and families are constructed in the {prefix}PB.txt file. Statistics for each family are
-# recorded in {prefix}WC.txt with the input query (MSA or singleton), number of taxa, and number of sequences for the family.
-
-Given the mmseqs results, run blast2cluster.
-
-# $1 is the name/prefix of the input psiblast and wordcount results
+# NOTE: This script should be run after mmseq2blast.sh
+#
+# $1 is the name/prefix of the input psiblast results
 # $2 is the original input .sr file
 # $3 is the minimum coverage for a good blast hit
 # $4 is the minimum bit score for a good blast hit
 # $5 is the minumum number of taxa in a family for further processing
 # $6 is the minumum number of sequences in a family for further processing
 #
-# NOTE: $3 and $4 should be equal to $6 and $7 used in mmseq2blast.sh.
-#
-# This script takes an input .sr file and the previously constructed mmseqs clusters, psiblasts the clusters and remaining
-# singletons against a blast database of consensus sequences and singletons, and sorts the resulting non-exclusive families
-# by the number of sequences and taxa contained. Exclusive families are then assembled through a "greedy" search where
-# sequences appearing in larger clusters (either by sequence or tax count) are removed from smaller clusters. The output
-# are directories of the resulting tax-sorted and sequence sorted .sr files and word count files $1_taxSortFam, $1_seqSortFam,
-# $1_MasterWC, $1_MatchWC, and $1TCWC/$1SCWC. Finally, it returns .cls files for tax sorted and seq sorted families, $1TC.cls/$1SC.cls.
-# Note the last line in the .cls files lists all of the remaining sequences which were not clustered
+# This script takes the input $1PB.txt file and calculates stats after the $3/4 thresholds are applied,
+# #taxa/sequences in the family. These non-exclusive families are then sorted by the number of
+# taxa contained. Exclusive families are then assembled through a "greedy" search where sequences appearing in 
+# larger clusters (by tax count not sequence count) are removed from smaller clusters. The output
+# are directories of the resulting tax-sorted .sr files and word count files *_taxSortFam,
+# *_MasterWC, and $1TCWC Finally, it returns .cls files for tax sorted families, $1TC.cls.
 
-Given the .cls file of choice, tax-sorted here, for a given host group and "binaryInteract", return to MATLAB to run processFamilies.
+./blast2cluster.sh 'plant' 'plantSTRINGsr.txt' 0.75 0.5 0 0
+./blast2cluster.sh 'vertebrate' 'vertebrateSTRINGsr.txt' 0.75 0.5 0 0
 
-Tried the following:
+Given the .cls file for each host group and "binaryInteract", return to MATLAB to run processFamilies.
+It takes the above families and makes a shortlist including only those that
+interact with at least one viral protein which in turn only interacts with that family (or below some other
+number of families if desired). It additionally thresholds by number of such interactions for the host family.
+Three levels of evidence 1) single host protein, viral protein. 2) many to 1 viral protein to host protein or
+host protein to viral protein. 3) multiple parallel host to viral protein interactions. This
+script returns two output, a binary interaction graph displaying these results is printed and a tab document
+with three fields 1) host family index, 2) host protein name, and 3) viral protein name is returned.
 
-./mmseq2blast.sh 'plant' 'plantSTRINGsr.txt' 0.5 '' 0.5 0.75 0.5
-./blast2cluster.sh 'plant' 'plantSTRINGsr.txt' 0.75 0.5 2 0
+Then align the families with microCoAlign which produces two .sr files (host/virus) which are manually reviewed
+and annotated for further consideration.
 
+./microCoAlign.sh 'plantReviewInteractions.txt' 'vertebrateReviewInteractions.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
 
-Trimmed plant graph:
+When there are many viruses in a group, the cls2ali output may be difficult to parse, so move to prof_align for a repeat
+clustering and alignment step:
 
+cut -f 1 virus5.sr > tmp_1.txt
+cut -f 4 -d'|' tmp_1.txt > tmp_2.txt
+sr2fa virusSTRINGsr.txt -w=0 > tmp_1.fa
+makeblastdb -in tmp_1.fa -input_type fasta -dbtype prot -parse_seqids -out tmp_Blast
+prof_align tmp_2.txt -db=tmp_Blast -nosge -w=0 -n=virus5
+rm tmp_*
 
+These results (about 10 preferred targets returned) exclude cases where there may be a larger virus protein family
+with many interactions with a given host protein family but also interactions with other host proteins outside that family.
+To retrieve any additional cases of interest, move on to cluster viral proteins into families.
 
+./mmseq2blast.sh 'virus' 'virusSTRINGsr.txt' 0.5 ''
+./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0.75 0.5 0 0
+./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0.5 0.3 0 0
+./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0.3 0.1 0 0
+./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0 0 0 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-onvert from .sr to .fa files and run mmseqs through wrap-around run_mmclust with -s=0.5 to get clusters.
-
-e.g.
-
-sr2fa virusSTRINGsr.txt -w=0 > tmp.fa
-run_mmclust tmp.fa -s=0.5 -w=0 > virusMMC.txt
-
-Move the *MMC.txt files to Desktop and delete. Run block 6 to get a plot of #proteins/#clusters.
-Now run the mmseq2blast file. This script takes an input .sr file, clusters using mmseqs, aligns the clusters,
-and calculates consensus sequences.
-
-# $1 is the name/prefix of the output files
-# $2 is the input .sr file
-# $3 is the input similarity threshold for mmseqs
-# $4 is whether to send to sge cluster during cls2ali, if no enter '', if yes enter '-sge'
-# $5 is -grcut for making the consensus sequences
-# $6 is the minimum coverage for a good blast hit
-# $7 is a minimum bit score for a good blast hit
-
-After this, run the and families are constructed in the $1PB.txt file.
-Statistics for each family are recorded in $1WC.txt with the input query (MSA or singleton), number of taxa, and number
-of sequences for the family.
-
-psiblast -db STRING -query blastSTRING.fa -out blastSTRINGout.txt -outfmt 6 -comp_based_stats 0 
-psiblast -db hostSTRING -query blastHostSTRING.fa -out blastHostSTRINGout.txt -outfmt 6 -comp_based_stats 0 
-psiblast -db virusSTRING -query blastVirusSTRING.fa -out blastVirusSTRINGout.txt -outfmt 6 -comp_based_stats 0 
-
-Given the blast results, run the first block of processBlastFamilies to generate the 'familyCell' variable which
-has 6 fields virus taxID, virus tax.gene, host taxID, host tax.gene, virus family, host family. The "families" are
-cell arrays. For each virus and host gene, the family cell contains a vector with indicies referencing the genes
-(by index of the former fields) that were returned in the blast search given that gene as input.
-
-Then run block 2 to incorporate the binaryInteract variable into family cell. The result is  a seventh field
-with each row representing a binary interaction between the host indexed in column 1 and the virus indexed
-in column 2.
+Coronavirus spike proteins were used as a litmus test and were not clustered until low thresholds of 0.3/0.1. These results
+are much more sensitive to threshold choice than the host proteins. Given the host and viral clusters, proceed to run the
+MATLAB script "processFamilyPairs2". This script identifies host protein - viral protein family pairs that have N parallel
+interactions between them (i.e. one host protein to one viral protein) such that the viral protein family has at most N-2
+parallel interactions with any other host family. The number of parallel interactions is determined by making a host-virus
+protein-protein interaction matrix for proteins within the cluster pair (binary, 1 interacting, 0 not interacting) and finding
+the rank of that matrix. These results are saved in a *ReviewFamilyPairs.txt file with fields N; pair index for a given N;
+number of host families with m parallel interactions with the given virus family m running from 1 to max # observed
+separated by pipes; host protein; virus protein.
 
 
+./blastTargetNR.sh 'hostTargetCLS.txt' 'virusTargetCLS.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
+
+./blastTargetNR2.sh 'STRINGtargets.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
+
+./blastTargetNR2.sh 'TESTtargets.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
+
+web blast for individual proteins or command line for -in_msa?
+
+cat hostSTRINGsr.txt > tmp_sr.txt
+cat virusSTRINGsr.txt >> tmp_sr.txt
+cut -f 1 STRINGtargets.txt > tmp_list.txt
+cut -f 2 STRINGtargets.txt >> tmp_list.txt
+
+tab_select tmp_sr.txt -t=tmp_list.txt > tmp_sr2.txt
+sr2fa tmp_sr2.txt > nrQueries.txt
+
+rm tmp_*
+
+split -l 2 -d nrQueries.txt nrQuery
 
 
+
+nonstandard psiblast values: maxtargetsequences=10000, compositional adjustments=no adjustment
 
 
 
