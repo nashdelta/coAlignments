@@ -1,8 +1,6 @@
 # hostVirus
 ## This is a step-by-step guide for generating the hostVirus coevolution results. Original code written for this project is contained in the repository but preexisting NCBI or Koonin group resources are not.
 
-## __________________________________________________________________________________
-
 ## First retrieve host-protein, virus-protein targets from the STRING interaction db.
 
 First download the STRING protein-protein interaction [database](http://viruses.string-db.org/cgi/download.pl?UserId=D8Isj3SrFhq7&sessionId=JIsh1R8qrtbm) with the link, "protein.links.v10.5.txt.gz". In February 2020 it was about 650 million lines with three fields: protein1, protein2, and score. Score is an integer. Proteins are of the form taxID.proteinID. Note "proteinID" can take a variety of forms.
