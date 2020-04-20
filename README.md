@@ -81,30 +81,31 @@ These results exclude cases where there may be a larger virus protein family wit
 
 Coronavirus spike proteins were used as a litmus test and were not clustered until low thresholds of 0.3/0.1 which were decided on for the original run. These results are much more sensitive to threshold choice than the host proteins. Given the host and viral [clusters](STRINGcls.zip), proceed to run the MATLAB script [processFamilyPairs2.m](processFamilyPairs2.m). This script identifies host protein - viral protein family pairs that have N parallel interactions between them (i.e. one host protein to one viral protein) such that the viral protein family has at most N-2 parallel interactions with any other host family. The number of parallel interactions is determined by making a host-virus protein-protein interaction matrix for proteins within the cluster pair (binary, 1 interacting, 0 not interacting) and finding the rank of that matrix. These results are saved in a ...ReviewFamilyPairs.txt file with fields N; pair index for a given N; number of host families with m parallel interactions with the given virus family m running from 1 to max # observed separated by pipes; host protein; virus protein.
 
+## Manually review results and construct target list
 
-./blastTargetNR.sh 'hostTargetCLS.txt' 'virusTargetCLS.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
+After manual review and the addition of two additional targets which did not meet the criteria imposed above, the original run returned twenty host-protein/virus-protein [targets](STRINGtargets.txt) with evidence of binary interaction between members of the orthologous families.
 
-./blastTargetNR2.sh 'STRINGtargets.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
+## Retrieve orthologous sequences in NR
 
-./blastTargetNR2.sh 'TESTtargets.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
+Now for each target ID, retrieve the sequence and generate a list of queries to send to [PSIBLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE=Proteins&PROGRAM=blastp&RUN_PSIBLAST=on).
 
-web blast for individual proteins or command line for -in_msa?
+`cat hostSTRINGsr.txt > tmp_sr.txt`
 
-cat hostSTRINGsr.txt > tmp_sr.txt
-cat virusSTRINGsr.txt >> tmp_sr.txt
-cut -f 1 STRINGtargets.txt > tmp_list.txt
-cut -f 2 STRINGtargets.txt >> tmp_list.txt
+`cat virusSTRINGsr.txt >> tmp_sr.txt`
 
-tab_select tmp_sr.txt -t=tmp_list.txt > tmp_sr2.txt
-sr2fa tmp_sr2.txt > nrQueries.txt
+`cut -f 1 STRINGtargets.txt > tmp_list.txt`
 
-rm tmp_*
+`cut -f 2 STRINGtargets.txt >> tmp_list.txt`
 
-split -l 2 -d nrQueries.txt nrQuery
+`tab_select tmp_sr.txt -t=tmp_list.txt > tmp_sr2.txt`
 
+`sr2fa tmp_sr2.txt > nrQueries.txt`
 
+`rm tmp_*`
 
-nonstandard psiblast values: maxtargetsequences=10000, compositional adjustments=no adjustment
+`split -l 2 -d nrQueries.txt nrQuery`
+
+Run a single iteration of PSIBLAST with nonstandard values: maxtargetsequences=10000, compositional adjustments=no adjustment.
 
 
 
