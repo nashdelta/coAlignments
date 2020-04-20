@@ -23,23 +23,15 @@ doesn't matter some rows are not unique.
 
 `taxid2name allTaxID.txt -l > taxLibrary.txt`
 
-in linux. Then run the MATLAB script processTaxLibrary to return the "speciesTax" variable which can then be used with "binaryInteract" to continue.
+in linux. Then run the MATLAB script [processTaxLibrary.m](processTaxLibrary.m) to return the "speciesTax" variable which can then be used with "binaryInteract" to continue.
 
-Now download all virus data from ncbi/virus:
-https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide
-Need only the fields: Species	Genus	Family	Protein	Host. Then for the list of hosts, get the tax lineage
-from the portal: https://www.ncbi.nlm.nih.gov/Taxonomy/TaxIdentifier/tax_identifier.cgi, choose "save in file"
-and return the "tax_report" text file with fields: code	|	name	|	preferred name	|	lineage.
-Run taxLineageReport to generate the lineageInfo variable for all hosts.
+## Retrieve host-species, viral-species interaction data
 
-Now can proceed given the ncb/virus data, "lineageInfo", "binaryInteract", and "speciesTax". Running virusGeneraStats3
-generates basic summary statistics for these datasets. From the NCBI dataset it yields a table containing:
-Genus	#Plant	#Metazoa ex Vert	#Vertebrates	#Unique Spec/Host	#Viral Spec
-and plots specifying the number of viral general with N or more hosts in major clades as well as the number of genera
-with N or more viral species contained and N or more unique species-host pair within that genus. From the STRING database
-it yields bipartite graphs of viruses and hosts connected with edges based on the number of protein-protein interactions
-known between the host and the virus and a small summary table with number of species, number of interacting species
-pairs, and number of protein-protein interactions for major clades.
+Now download all available protein data from [NCBI Virus](https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide) with only the fields: Species	Genus	Family Protein	Host. Then for the list of hosts, get the tax lineage from the [portal](https://www.ncbi.nlm.nih.gov/Taxonomy/TaxIdentifier/tax_identifier.cgi), choose "save in file" and return the "tax_report" text file with fields: code	|	name	|	preferred name	|	lineage. Run the MATLAB script [taxLineageReport.m](taxLineageReport.m) to generate the "lineageInfo" variable for all hosts.
+
+## Generate species interaction bipartite graph and summary table
+
+Now we can proceed given the *NCBI Virus* data, "lineageInfo", "binaryInteract", and "speciesTax" to run the MATLAB script [virusGeneraStats.m](virusGeneraStats.m) which generates basic summary statistics for these datasets. From the NCBI dataset it yields a table containing: Genus	#Plant	#Metazoa ex Vert	#Vertebrates	#Unique Spec/Host	#Viral Spec and plots specifying the number of viral general with N or more hosts in major clades as well as the number of genera with N or more viral species contained and N or more unique species-host pair within that genus. From the STRING database it yields bipartite graphs of viruses and hosts connected with edges based on the number of protein-protein interactions known between the host and the virus and a small summary table with number of species, number of interacting species pairs, and number of protein-protein interactions for major clades.
 
 To proceed we want to retrieve the sequences for each protein appearing in a pair. To start, download
 protein.sequences.v10.5.fa.gz from the STRING database. Some of the proteins are missing. To determine what's missing
