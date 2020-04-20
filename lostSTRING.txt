@@ -1,0 +1,14 @@
+code	taxid	primary taxid	taxname
+
+Gene lost, others present
+
+1	11053	11053	Dengue virus 1
+1	11060	11060	Dengue virus 2
+1	11069	11069	Dengue virus 3
+
+All genes lost
+
+1	118140	118140		Teschovirus A
+1	12110	12110		Foot-and-mouth disease virus
+1	1330524	1330524		Salivirus A
+1	312185	312185		Erbovirus A
