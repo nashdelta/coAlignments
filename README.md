@@ -61,7 +61,7 @@ Given the .cls [files](STRINGcls.zip) for all host groups and [binaryInteract.ma
 
 The next step is to align the families using [microCoAlign.sh](microCoAlign.sh) which produces two .sr files (host/virus) which are manually reviewed and annotated for further consideration. 
 
-Note that the when multiple virus sequences are paired with a given host family at this stage, not all these sequences are orthologous. When there are many viruses in a group, the cls2ali output within [microCoAlign.sh](microCoAlign.sh) may be difficult to parse, so move to prof_align for a repeat clustering and alignment step:
+Note that the when multiple virus sequences are paired with a given host family at this stage, not all these sequences are orthologous. When there are many viruses in a group, the cls2ali output within [microCoAlign.sh](microCoAlign.sh) may be difficult to parse and it may be easier to move to prof_align for a repeat clustering and alignment step:
 
 `cut -f 1 virus5.sr > tmp_1.txt`
 
@@ -75,25 +75,11 @@ Note that the when multiple virus sequences are paired with a given host family 
 
 `rm tmp_*`
 
-These results (about 10 preferred targets returned) exclude cases where there may be a larger virus protein family
-with many interactions with a given host protein family but also interactions with other host proteins outside that family.
-To retrieve any additional cases of interest, move on to cluster viral proteins into families.
+## Cluster virus sequences
 
-./mmseq2blast.sh 'virus' 'virusSTRINGsr.txt' 0.5 ''
-./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0.75 0.5 0 0
-./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0.5 0.3 0 0
-./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0.3 0.1 0 0
-./blast2cluster.sh 'virus' 'virusSTRINGsr.txt' 0 0 0 0
+These results exclude cases where there may be a larger virus protein family with many interactions with a given host protein family but also interactions with other host proteins outside that family. To retrieve any additional cases of interest, viral proteins may be additionally clustered, as done for host proteins.
 
-Coronavirus spike proteins were used as a litmus test and were not clustered until low thresholds of 0.3/0.1. These results
-are much more sensitive to threshold choice than the host proteins. Given the host and viral clusters, proceed to run the
-MATLAB script "processFamilyPairs2". This script identifies host protein - viral protein family pairs that have N parallel
-interactions between them (i.e. one host protein to one viral protein) such that the viral protein family has at most N-2
-parallel interactions with any other host family. The number of parallel interactions is determined by making a host-virus
-protein-protein interaction matrix for proteins within the cluster pair (binary, 1 interacting, 0 not interacting) and finding
-the rank of that matrix. These results are saved in a *ReviewFamilyPairs.txt file with fields N; pair index for a given N;
-number of host families with m parallel interactions with the given virus family m running from 1 to max # observed
-separated by pipes; host protein; virus protein.
+Coronavirus spike proteins were used as a litmus test and were not clustered until low thresholds of 0.3/0.1 which were decided on for the original run. These results are much more sensitive to threshold choice than the host proteins. Given the host and viral [clusters](STRINGcls.zip), proceed to run the MATLAB script [processFamilyPairs2.m](processFamilyPairs2.m). This script identifies host protein - viral protein family pairs that have N parallel interactions between them (i.e. one host protein to one viral protein) such that the viral protein family has at most N-2 parallel interactions with any other host family. The number of parallel interactions is determined by making a host-virus protein-protein interaction matrix for proteins within the cluster pair (binary, 1 interacting, 0 not interacting) and finding the rank of that matrix. These results are saved in a ...ReviewFamilyPairs.txt file with fields N; pair index for a given N; number of host families with m parallel interactions with the given virus family m running from 1 to max # observed separated by pipes; host protein; virus protein.
 
 
 ./blastTargetNR.sh 'hostTargetCLS.txt' 'virusTargetCLS.txt' 'hostSTRINGsr.txt' 'virusSTRINGsr.txt'
