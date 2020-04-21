@@ -143,7 +143,7 @@ Manually review the clustering results and return a single .sr file for each ali
 
 ## Run IQ-TREE and INDELible
 
-Move the .fa/.bat files and the "indel.tmp.txt" file into the working PC directory and double-click the .bat file to run IQ-TREE to find the best fit evolutionary model and an approximate tree (run in -fast mode) for each alignment. Proceed to run the MATLAB script [writeINDELcontrols](writeINDELcontrols) which generates the INDELible control file. Copy this file into the folder containing the local installation of INDELible and generate replicates of synthetic alignments given the IQ-TREE best fit models and approximate trees.
+Move the .fa/.bat files and the "indel.tmp.txt" file into the working PC directory and double-click the .bat file to run IQ-TREE to find the best fit evolutionary model and an approximate tree (run in -fast mode) for each alignment. Proceed to run the MATLAB script [writeINDELcontrols.m](writeINDELcontrols.m) which generates the INDELible control file. Copy this file into the folder containing the local installation of INDELible and generate replicates of synthetic alignments given the IQ-TREE best fit models and approximate trees.
 
 
 
