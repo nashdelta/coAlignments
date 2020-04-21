@@ -11,7 +11,7 @@
 cd $2
 vals=$(seq 1 1 $1)
 
-echo 'cd C:\Users\rochmannd\Desktop\epistasisProject\wIqTree\bin' > $2.bat
+echo 'cd C:\Users\rochmannd\Desktop\commandLineResources\iqtree\bin' > $2.bat
 
 for i in $vals
 do
@@ -31,8 +31,8 @@ num2=$(($num0 / 2 + 1))
 sed "${num1}q;d" tmp_1.txt >> tmp_i1.txt
 sed "${num2}q;d" tmp_2.txt >> tmp_i2.txt
 
-echo 'iqtree -fast -nt AUTO -st AA -mset Poisson,JTT,JTTDCMut,Dayhoff,DCMut,WAG,mtMAM,mtART,mtREV,rtREV,cpREV,VT,Blosum62,LG,HIVb,HIVw -mrate I+G -redo -s C:\Users\rochmannd\Desktop\nrQueries\'$2'\host_'$i'.fa' >> $2.bat
-echo 'iqtree -fast -nt AUTO -st AA -mset Poisson,JTT,JTTDCMut,Dayhoff,DCMut,WAG,mtMAM,mtART,mtREV,rtREV,cpREV,VT,Blosum62,LG,HIVb,HIVw -mrate I+G -redo -s C:\Users\rochmannd\Desktop\nrQueries\'$2'\virus_'$i'.fa' >> $2.bat
+echo 'iqtree -fast -nt AUTO -st AA -mset Poisson,JTT,JTTDCMut,Dayhoff,DCMut,WAG,mtMAM,mtART,mtREV,rtREV,cpREV,VT,Blosum62,LG,HIVb,HIVw -mrate I+G -redo -s C:\Users\rochmannd\Desktop\co_Alignment_PC\'$2'\host_'$i'.fa' >> $2.bat
+echo 'iqtree -fast -nt AUTO -st AA -mset Poisson,JTT,JTTDCMut,Dayhoff,DCMut,WAG,mtMAM,mtART,mtREV,rtREV,cpREV,VT,Blosum62,LG,HIVb,HIVw -mrate I+G -redo -s C:\Users\rochmannd\Desktop\co_Alignment_PC\'$2'\virus_'$i'.fa' >> $2.bat
 
 done
 
