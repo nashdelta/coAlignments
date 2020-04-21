@@ -131,5 +131,5 @@ Given a directory full of the .csv files returned from the previous step, run Bl
 
 `rm tmp_*`
 
-Continue to run Block 2 of [matchTax.m](matchTax.m) which compress with compressVACH.m data from ncbiVirusDat2.zip
+Return to [NCBI Virus](https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide), this time to download the protein accession codes and the host information (if any) for the [virus](ncbiVirusDat2.zip) which was compressed using the MATLAB script [compressVACH.m](compressVACH.m). Note the two NCBI Virus downloads could (and should) have been done at once. Continue to run Block 2 of [matchTax.m](matchTax.m) which uses this file, [accTax.txt](accTax.txt), and [STRINGtargets.txt](STRINGtargets.txt) to match the host taxa with the virus-host taxa. This step is performed prior to clustering to remove unpaired (and unnecessary) sequences and decrease compute time. This script returns a series of text files with two columns: host protein ID and virus protein ID (note only a subset of these may have known binary interactions) named in the following convention STRINGtargetsRow#\_Ex-Host-Species\_Ex-Virus-Species.txt (e.g. 15_Homo-sapiens\_Vaccinia-virus.txt) as well as the [hostMatchIndex.txt](hostMatchIndex.txt) file. 
 
