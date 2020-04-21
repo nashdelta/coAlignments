@@ -141,3 +141,9 @@ Given a directory filled with text files labelled in the above convention (only 
 
 Manually review the clustering results and return a single .sr file for each alignment (probably just the largest one output from prof\_align). Proceed to run the linux script [profAlign2IQtree.sh](profAlign2IQtree.sh). This script takes pairs of input .sr files, host and virus alignments, calculates the mean sequence length among both hosts and viruses and prints to a file for later use within INDELible, and prepares files to run IQtree, both the input .fa files and the .bat file to start the program (on PC - so note the files must be manually moved to the PC project directory).
 
+## Run IQ-TREE and INDELible
+
+Move the .fa/.bat files and the "indel.tmp.txt" file into the working PC directory and double-click the .bat file to run IQ-TREE to find the best fit evolutionary model and an approximate tree (run in -fast mode) for each alignment. Proceed to run the MATLAB script [writeINDELcontrols](writeINDELcontrols) which generates the INDELible control file. Copy this file into the folder containing the local installation of INDELible and generate replicates of synthetic alignments given the IQ-TREE best fit models and approximate trees.
+
+
+
