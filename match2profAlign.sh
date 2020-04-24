@@ -8,7 +8,7 @@
 # to be named in the convention of 1_*,...,n_*.
 
 cd $1
-FILES=*.txt
+FILES=$(ls -v *.txt)
 count=0
 for i in $FILES
 do
