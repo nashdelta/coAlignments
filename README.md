@@ -117,7 +117,7 @@ Given a directory full of the .csv files returned from the previous step, run Bl
 
 `blastdbcmd -db nr -target_only -entry_batch tmp_1.txt -outfmt '%a %T' > tmp_2.txt`
 
-`cut -f 2 -d ' ' tmp_2.txt | taxid2name > tmp_3.txt`
+`cut -f 2 -d ' ' tmp_2.txt | taxid2name -l > tmp_3.txt`
 
 `tab_merge tmp_2.txt -t=tmp_3.txt -k1=2 -k2=1 -s1=" " > tmp_4.txt`
 
