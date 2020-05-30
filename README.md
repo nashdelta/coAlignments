@@ -112,15 +112,25 @@ Run a single iteration of [PSIBLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CM
 Given a directory full of the .csv files returned from the previous step, run Block 1 of the MATLAB script [matchTax.m](matchTax.m) which generates a text file "acc.txt" containing all the NR accession ID's in the blast results. Then use "taxid2name" to return the file [accTax.txt](accTax.txt) with three fields: NR accession ID, tax ID, and species name.
 
 `perl -pi -e 's/\R/\012/' acc.txt`
+
 `sort -u acc.txt > tmp_1.txt`
+
 `blastdbcmd -db nr -target_only -entry_batch tmp_1.txt -outfmt '%a %T' > tmp_2.txt`
+
 `cut -f 2 -d ' ' tmp_2.txt | taxid2name > tmp_3.txt`
+
 `tab_merge tmp_2.txt -t=tmp_3.txt -k1=2 -k2=1 -s1=" " > tmp_4.txt`
+
 `cut -f 1 tmp_4.txt > tmp_4.1.txt`
+
 `cut -f 2 tmp_4.txt > tmp_4.2.txt`
+
 `cut -f 3 tmp_4.txt > tmp_4.3.txt`
+
 `cut -f 1 -d. tmp_4.1.txt > tmp_4.1.2.txt`
+
 `paste -d, tmp_4.1.2.txt tmp_4.2.txt tmp_4.3.txt > accTax.txt`
+
 `rm tmp_*`
 
 Return to [NCBI Virus](https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide), this time to download the protein accession codes and the host information (if any) for the [virus](ncbiVirusDat2.zip) which was compressed using the MATLAB script [compressVACH.m](compressVACH.m). Note the two NCBI Virus downloads could (and should) have been done at once. Continue to run Block 2 of [matchTax.m](matchTax.m) which uses this file, [accTax.txt](accTax.txt), and [STRINGtargets.txt](STRINGtargets.txt) to match the host taxa with the virus-host taxa. This step is performed prior to clustering to remove unpaired (and unnecessary) sequences and decrease compute time. This script returns a series of text files with two columns: host protein ID and virus protein ID (note only a subset of these may have known binary interactions) named in the following convention STRINGtargetsRow#\_Ex-Host-Species\_Ex-Virus-Species.txt (e.g. 15_Homo-sapiens\_Vaccinia-virus.txt) as well as the [hostMatchIndex.txt](hostMatchIndex.txt) file. This index file contains five fields hostKey(STRING ID), virusKey(STRING ID), aliName(reference above .txt file), numHost(in alignment), numVirus(in alignment), vNoOrtho(number of viruses - all sequences - removed from virus alignment because no ortholog of the target host protein was retrieved in the blast search), and vNoHost(number of viruses removed - all sequences - from the alignment because there is no known host for the virus listed NCBI Virus.
