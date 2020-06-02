@@ -1,4 +1,4 @@
-# coAlignments - need to update matchTax, list2footprint
+# coAlignments - need to update matchTax, list2footprint, stringTargets
 ## This is a step-by-step guide for generating host-virus or virus-virus coevolutionary signatures. Original code written for this project is contained in the repository but preexisting NCBI or Koonin group resources are not.
 
 ## Retrieval of host-protein, virus-protein targets from the STRING interaction db.
