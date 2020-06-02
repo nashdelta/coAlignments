@@ -107,6 +107,8 @@ Now for each target ID, from any target file, retrieve the sequence and generate
 
 `rm tmp_*`
 
+check for polyproteins and separate into segments.
+
 `split -l 2 -d nrQueries.txt nrQuery`
 
 for the STRING case, and use the nr ID as usual for the literature case. If the desired query is a viral polyprotein, break it up into smaller segments using the query subrange dialog box.
