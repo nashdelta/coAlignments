@@ -1,4 +1,4 @@
-# coAlignments
+# coAlignments - need to update matchTax, list2footprint
 ## This is a step-by-step guide for generating host-virus or virus-virus coevolutionary signatures. Original code written for this project is contained in the repository but preexisting NCBI or Koonin group resources are not.
 
 ## Retrieval of host-protein, virus-protein targets from the STRING interaction db.
@@ -89,9 +89,9 @@ After manual review and the addition of two additional targets which did not mee
 
 Conduct a literature review for well established pairs of host-virus protein-protein interactions known if possible to be conserved across multiple hosts. These constitute an second list of [targets](literatureTargets.txt).
 
-## Retrieve orthologous sequences in NR
+## Retrieve orthologous sequences in NR/Refseq
 
-Now for each target ID, retrieve the sequence and generate a list of queries to send to [PSIBLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE=Proteins&PROGRAM=blastp&RUN_PSIBLAST=on).
+Now for each target ID, from any target file, retrieve the sequence and generate a list of queries to send to [PSIBLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE=Proteins&PROGRAM=blastp&RUN_PSIBLAST=on).
 
 `cat hostSTRINGsr.txt > tmp_sr.txt`
 
@@ -109,11 +109,13 @@ Now for each target ID, retrieve the sequence and generate a list of queries to 
 
 `split -l 2 -d nrQueries.txt nrQuery`
 
-Run a single iteration of [PSIBLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE=Proteins&PROGRAM=blastp&RUN_PSIBLAST=on) with nonstandard values: maxtargetsequences=10000, compositional adjustments=no adjustment for each. Save the output as a .csv file named with the sequence query ID (from STRING, e.g. "3702.AT3G12280.1.csv").
+for the STRING case, and use the nr ID as usual for the literature case. If the desired query is a viral polyprotein, break it up into smaller segments using the query subrange dialog box.
 
-## Match virus-host taxa to host taxa
+Run a single iteration of [PSIBLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE=Proteins&PROGRAM=blastp&RUN_PSIBLAST=on) with nonstandard values: maxtargetsequences=20000, compositional adjustments=no adjustment for each. If more than 20k highly similar sequences are returned (as is likely to be the case for a Dengue or Flu query for example), re-run against refseq. Due to the large number of sequences returned, the page often hangs. To avoid this, after beginning the search and before it has concluded, click the "formatting options" link in the wait page and change the output format to "plain text". Copy and paste "all" from the output page into a text file and name with the query.
 
-Given a directory full of the .csv files returned from the previous step, run Block 1 of the MATLAB script [matchTax.m](matchTax.m) which generates a text file "acc.txt" containing all the NR accession ID's in the blast results. Then use "taxid2name" to return the file [accTax.txt](accTax.txt) with three fields: NR accession ID, tax ID, and species name.
+## Process blast .txt output and get tax info
+
+Given a directory of psiblast output and a file containing the target queries (returned from the previous step) run Block 1 of the MATLAB script [matchTax.m](matchTax.m) which generates hitlists from each .txt output file. Additionally, a text file "acc.txt" containing all the accession ID's in all the blast results is generated. Then use "taxid2name" to return the file "accTax.txt" with three fields: NR accession ID, tax ID, and species lineage.
 
 `perl -pi -e 's/\R/\012/' acc.txt`
 
@@ -137,11 +139,29 @@ Given a directory full of the .csv files returned from the previous step, run Bl
 
 `rm tmp_*`
 
-Return to [NCBI Virus](https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide), this time to download the protein accession codes and the host information (if any) for the [virus](ncbiVirusDat2.zip) which was compressed using the MATLAB script [compressVACH.m](compressVACH.m). Note the two NCBI Virus downloads could (and should) have been done at once. Continue to run Block 2 of [matchTax.m](matchTax.m) which uses this file, [accTax.txt](accTax.txt), and [STRINGtargets.txt](STRINGtargets.txt) to match the host taxa with the virus-host taxa. This step is performed prior to clustering to remove unpaired (and unnecessary) sequences and decrease compute time. This script returns a series of text files with two columns: host protein ID and virus protein ID (note only a subset of these may have known binary interactions) named in the following convention STRINGtargetsRow#\_Ex-Host-Species\_Ex-Virus-Species.txt (e.g. 15_Homo-sapiens\_Vaccinia-virus.txt) as well as the [hostMatchIndex.txt](hostMatchIndex.txt) file. This index file contains five fields hostKey(STRING ID), virusKey(STRING ID), aliName(reference above .txt file), numHost(in alignment), numVirus(in alignment), vNoOrtho(number of viruses - all sequences - removed from virus alignment because no ortholog of the target host protein was retrieved in the blast search), and vNoHost(number of viruses removed - all sequences - from the alignment because there is no known host for the virus listed NCBI Virus.
+## Obtain host pairing information
+
+Return to [NCBI Virus](https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide), this time to download the protein accession codes and the host information (if any) for the [virus](ncbiVirusDat2.zip) which was compressed using the MATLAB script [compressVACH.m](compressVACH.m). Note the two NCBI Virus downloads could (and should) have been done at once.
+
+## Find viral footprints
+
+Because many viral sequences of interest are polyproteins, the relevent segment must be identified prior to alignment. Run the linux script [list2footprint.sh](list2footprint.sh) to identify the top footprint for the query on each sequence in the hitlist (again given a target file and all dependent hit list files). Short footprints (less than 50% or some other threshold of the query length) are removed.
+
+## Obtain host-unique hit lists
+
+For the host-virus case, run Block 2 of [matchTax.m](matchTax.m) which uses "accTax.txt", and the target file to generate a host-unique hit lists. For each host species, the first sequence in the original hitlist is kept as the original hitlist retains the psiblast output in order of decreasing scores.
+
+
+# fix
+
+to match the host taxa with the virus-host taxa. This step is performed prior to clustering to remove unpaired (and unnecessary) sequences and decrease compute time. This script returns a series of text files with two columns: host protein ID and virus protein ID (note only a subset of these may have known binary interactions) named in the following convention STRINGtargetsRow#\_Ex-Host-Species\_Ex-Virus-Species.txt (e.g. 15_Homo-sapiens\_Vaccinia-virus.txt) as well as the [hostMatchIndex.txt](hostMatchIndex.txt) file. This index file contains five fields hostKey(STRING ID), virusKey(STRING ID), aliName(reference above .txt file), numHost(in alignment), numVirus(in alignment), vNoOrtho(number of viruses - all sequences - removed from virus alignment because no ortholog of the target host protein was retrieved in the blast search), and vNoHost(number of viruses removed - all sequences - from the alignment because there is no known host for the virus listed NCBI Virus.
 
 ## Align sequences
 
 Given a directory filled with text files labelled in the above convention (only the prefiex n\_ is necessary), run the linux script [match2profAlign.sh](match2profAlign.sh). This script takes an input directory containing text files with two columns of matched accession id's, host/virus, and generates alignments for the id's in each column the output are returned to separate directories.
+
+# New name
+Continue to run Block 2 of [matchTax.m](matchTax.m) which uses this file, [accTax.txt](accTax.txt), and [STRINGtargets.txt](STRINGtargets.txt) to match the host taxa with the virus-host taxa. This step is performed prior to clustering to remove unpaired (and unnecessary) sequences and decrease compute time. This script returns a series of text files with two columns: host protein ID and virus protein ID (note only a subset of these may have known binary interactions) named in the following convention STRINGtargetsRow#\_Ex-Host-Species\_Ex-Virus-Species.txt (e.g. 15_Homo-sapiens\_Vaccinia-virus.txt) as well as the [hostMatchIndex.txt](hostMatchIndex.txt) file. This index file contains five fields hostKey(STRING ID), virusKey(STRING ID), aliName(reference above .txt file), numHost(in alignment), numVirus(in alignment), vNoOrtho(number of viruses - all sequences - removed from virus alignment because no ortholog of the target host protein was retrieved in the blast search), and vNoHost(number of viruses removed - all sequences - from the alignment because there is no known host for the virus listed NCBI Virus.
 
 ## Create IQ-TREE input
 
