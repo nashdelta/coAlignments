@@ -1,15 +1,15 @@
-# hostVirus
-## This is a step-by-step guide for generating the hostVirus coevolution results. Original code written for this project is contained in the repository but preexisting NCBI or Koonin group resources are not.
+# coAlignments
+## This is a step-by-step guide for generating host-virus or virus-virus coevolutionary signatures. Original code written for this project is contained in the repository but preexisting NCBI or Koonin group resources are not.
 
-## First retrieve host-protein, virus-protein targets from the STRING interaction db.
+## Retrieval of host-protein, virus-protein targets from the STRING interaction db.
 
-First download the STRING protein-protein interaction [database](http://viruses.string-db.org/cgi/download.pl?UserId=D8Isj3SrFhq7&sessionId=JIsh1R8qrtbm) with the link, "protein.links.v10.5.txt.gz". In February 2020 it was about 650 million lines with three fields: protein1, protein2, and score. Score is an integer. Proteins are of the form taxID.proteinID. Note "proteinID" can take a variety of forms.
+Download the STRING protein-protein interaction [database](http://viruses.string-db.org/cgi/download.pl?UserId=D8Isj3SrFhq7&sessionId=JIsh1R8qrtbm) with the link, "protein.links.v10.5.txt.gz". In February 2020 it was about 650 million lines with three fields: protein1, protein2, and score. Score is an integer. Proteins are of the form taxID.proteinID. Note "proteinID" can take a variety of forms.
 
-## Remove rows corresponding to "self-interactions", the vast majority
+### Remove rows corresponding to "self-interactions", the vast majority
 
 Run the MATLAB script [readSTRINGdb.m](readSTRINGdb.m) to get the [binaryInteract.mat](binaryInteract.mat) cell with five fields: taxID and ProteinID split plus the score. Only rows corresponding to pairs with two different taxID's are recorded (i.e. pairs within a given organism are excluded). Note that "binaryInteract" saves the original information row-for-row from the STRING download wherever the taxID are different in columns 1&2. It turns out that STRING allows for dupilicated rows insensitive to order. i.e if the order of columns 1 and 2 doesn't matter some rows are not unique.
 
-## Get taxonomy library
+### Get taxonomy library
 
 [readSTRINGdb.m](readSTRINGdb.m) also returns a text file, allTaxID.txt. Take that file and run:
 
@@ -19,15 +19,15 @@ in linux. Then run the MATLAB script [processTaxLibrary.m](processTaxLibrary.m) 
 
 ## Retrieve host-species, viral-species interaction data
 
-Now download all available protein data from [NCBI Virus](https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide) with only the fields: Species	Genus	Family Protein	Host. Then for the list of hosts, get the tax lineage from the [portal](https://www.ncbi.nlm.nih.gov/Taxonomy/TaxIdentifier/tax_identifier.cgi), choose "save in file" and return the "tax_report" text file with fields: code	|	name	|	preferred name	|	lineage. Run the MATLAB script [taxLineageReport.m](taxLineageReport.m) to generate the [lineageInfo.mat](lineageInfo.mat) variable for all hosts.
+Download all available protein data from [NCBI Virus](https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?VirusLineage_ss=Viruses,%20taxid:10239&SeqType_s=Nucleotide) with only the fields: Species	Genus	Family Protein	Host. Then for the list of hosts, get the tax lineage from the [portal](https://www.ncbi.nlm.nih.gov/Taxonomy/TaxIdentifier/tax_identifier.cgi), choose "save in file" and return the "tax_report" text file with fields: code	|	name	|	preferred name	|	lineage. Run the MATLAB script [taxLineageReport.m](taxLineageReport.m) to generate the [lineageInfo.mat](lineageInfo.mat) variable for all hosts.
 
-## Generate species interaction bipartite graph and summary table
+## Generate species interaction bipartite graph and summary table for STRING db
 
-Now we can proceed given the NCBI Virus [data](ncbiVirusDat.mat) (which was compressed using the MATLAB script [compressVDWN.m](compressVDWN.m)), [lineageInfo.mat](lineageInfo.mat), [binaryInteract.mat](binaryInteract.mat), and [speciesTax.mat](speciesTax.mat) to run the MATLAB script [virusGeneraStats.m](virusGeneraStats.m) which generates basic summary statistics for these datasets. From the NCBI dataset it yields a table containing: Genus	#Plant	#Metazoa ex Vert	#Vertebrates	#Unique Spec/Host	#Viral Spec and plots specifying the number of viral genera with N or more hosts in major clades as well as the number of genera with N or more viral species contained and N or more unique species-hosts pair within that genus. From the STRING database it yields bipartite graphs of viruses and hosts connected with edges based on the number of protein-protein interactions known between the host and the virus and a small summary table with number of species, number of interacting species pairs, and number of protein-protein interactions for major clades. The graphs are generated using the MATLAB script [plotBipartite1.m](plotBipartite1.m).
+We can proceed given the NCBI Virus [data](ncbiVirusDat.mat) (which was compressed using the MATLAB script [compressVDWN.m](compressVDWN.m)), [lineageInfo.mat](lineageInfo.mat), [binaryInteract.mat](binaryInteract.mat), and [speciesTax.mat](speciesTax.mat) to run the MATLAB script [virusGeneraStats.m](virusGeneraStats.m) which generates basic summary statistics for these datasets. From the NCBI dataset it yields a table containing: Genus	#Plant	#Metazoa ex Vert	#Vertebrates	#Unique Spec/Host	#Viral Spec and plots specifying the number of viral genera with N or more hosts in major clades as well as the number of genera with N or more viral species contained and N or more unique species-hosts pair within that genus. From the STRING database it yields bipartite graphs of viruses and hosts connected with edges based on the number of protein-protein interactions known between the host and the virus and a small summary table with number of species, number of interacting species pairs, and number of protein-protein interactions for major clades. The graphs are generated using the MATLAB script [plotBipartite1.m](plotBipartite1.m).
 
-## Retrieve protein sequences
+## Retrieve protein sequences for STRING db
 
-To proceed we want to retrieve the sequences for each protein appearing in a host-virus pair. To start, download "protein.sequences.v10.5.fa.gz" (STRINGdb.fa) from the STRING database. Some of the proteins are missing. To determine what's missing get a unique list of all protein names in [binaryInteract.mat](binaryInteract.mat) including taxID (for completeness, unused). The first block of the MATLAB script [writeTaxLookup.m](writeTaxLookup.m) will write a file with this information, "subSTRINGnames.txt". Next convert the downloaded .fa file to an .sr file to get the list of names from this file:
+We want to retrieve the sequences for each protein appearing in a host-virus pair. To start, download "protein.sequences.v10.5.fa.gz" (STRINGdb.fa) from the STRING database. Some of the proteins are missing. To determine what's missing get a unique list of all protein names in [binaryInteract.mat](binaryInteract.mat) including taxID (for completeness, unused). The first block of the MATLAB script [writeTaxLookup.m](writeTaxLookup.m) will write a file with this information, "subSTRINGnames.txt". Next convert the downloaded .fa file to an .sr file to get the list of names from this file:
 
 `fa2sr STRINGdb.fa -w=0 > STRINGdb.sr`
 
@@ -49,7 +49,7 @@ Now run block 5 of [writeTaxLookup.m](writeTaxLookup.m) to split the .sr files i
 
 ## Cluster host sequences
 
-Proceed to run the linux script [mmseq2blast.sh](mmseq2blast.sh) for each host group. This script takes an input .sr file, clusters using mmseqs, aligns the clusters, and calculates consensus sequences. After this, psiblast is run and families are constructed in the {prefix}PB.txt file. For the original run, $3, the input similarity threshold for mmseqs, was set to 0.5.
+Run the linux script [mmseq2blast.sh](mmseq2blast.sh) for each host group. This script takes an input .sr file, clusters using mmseqs, aligns the clusters, and calculates consensus sequences. After this, psiblast is run and families are constructed in the {prefix}PB.txt file. For the original run, $3, the input similarity threshold for mmseqs, was set to 0.5.
 
 Given the mmseqs results, run the linux script [blast2cluster.sh](blast2cluster.sh) for various threshold choices. For the original run 0.75/0.5, 0.5/0.3, and 0/0 were tried for $3, the minimum coverage for a good blast hit, and $4, the minimum bit score for a good blast hit. $5, the minumum number of taxa in a family for further processing, and $6, the minumum number of sequences in a family for further processing, were both kept at 0. This script takes the input $1PB.txt file and calculates stats after the $3/4 thresholds are applied. These non-exclusive families are then sorted by the number of taxa contained. Exclusive families are then assembled through a "greedy" search where sequences appearing in larger clusters (by tax count not sequence count) are removed from smaller clusters. The output are directories of the resulting tax-sorted .sr files and word count files ...taxSortFam, ...MasterWC, and $1TCWC. Finally, it returns .cls files for tax sorted families, $1TC.cls.
 
@@ -84,6 +84,10 @@ Coronavirus spike proteins were used as a litmus test and were not clustered unt
 ## Manually review results and construct target list
 
 After manual review and the addition of two additional targets which did not meet the criteria imposed above, the original run returned twenty host-protein/virus-protein [targets](STRINGtargets.txt) with evidence of binary interaction between members of the orthologous families.
+
+## Obtain manually curated list of targets (not from STRING db)
+
+Conduct a literature review for well established pairs of host-virus protein-protein interactions known if possible to be conserved across multiple hosts. These constitute an second list of [targets](literatureTargets.txt).
 
 ## Retrieve orthologous sequences in NR
 
