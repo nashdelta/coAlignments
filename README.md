@@ -1,4 +1,4 @@
-# coAlignments - need to update matchTax, list2footprint, stringTargets
+# coAlignments - need to update matchTax, list2footprint, stringTargets, literatureTargets
 ## This is a step-by-step guide for generating host-virus or virus-virus coevolutionary signatures. Original code written for this project is contained in the repository but preexisting NCBI or Koonin group resources are not.
 
 ## Retrieval of host-protein, virus-protein targets from the STRING interaction db.
@@ -87,7 +87,11 @@ After manual review and the addition of two additional targets which did not mee
 
 ## Obtain manually curated list of targets (not from STRING db)
 
-Conduct a literature review for well established pairs of host-virus protein-protein interactions known if possible to be conserved across multiple hosts. These constitute an second list of [targets](literatureTargets.txt).
+Conduct a literature review for well established pairs of host-virus protein-protein interactions known if possible to be conserved across multiple hosts. These constitute an second list of [targets](literatureTargets.txt). Note that targets should be reviewed to ensure they are present in the Blast db e.g:
+
+`blastdbcmd -db nr -target_only -entry AVI26354.1`
+
+sometimes a target will appear [here](https://www.ncbi.nlm.nih.gov/protein/) but still appear missing.
 
 ## Retrieve orthologous sequences in NR/Refseq
 
